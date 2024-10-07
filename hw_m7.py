@@ -23,10 +23,10 @@ class Phone(Field):
 class Birthday(Field):
     def __init__(self, value):
         try:
-            self.value = datetime.strptime(value, "%d.%m.%Y").date()
+            datetime.strptime(value, "%d.%m.%Y")
         except ValueError:
             raise ValueError("Invalid date format. Use DD.MM.YYYY")
-        super().__init__(self.value)
+        super().__init__(value)
 
 class Record:
     def __init__(self, name):
@@ -57,9 +57,12 @@ class Record:
         result = list(filter(lambda phone: phone.value == phone_value, self.phones))
         return result[0] if len(result) > 0 else None
 
+    def value_birthday(self):
+        return self.birthday.value
+
     def __str__(self):
         phones = '; '.join(p.value for p in self.phones) if self.phones else "No phone numbers"
-        birthday = self.birthday.value.strftime('%d.%m.%Y') if self.birthday else "No birthday set"
+        birthday = self.value_birthday() if self.birthday else "No birthday set"
         return f"Name: {self.name.value}, phones: {phones}, birthday: {birthday}"
 
 class AddressBook(UserDict):
@@ -80,8 +83,8 @@ class AddressBook(UserDict):
 
         for record in self.data.values():
             if record.birthday:
-
-                birthday_this_year = record.birthday.value.replace(year=today.year)
+                
+                birthday_this_year = datetime.strptime(record.birthday.value, '%d.%m.%Y').date().replace(year=today.year)
 
                 if birthday_this_year < today:
                     birthday_this_year = birthday_this_year.replace(year=today.year + 1)
@@ -174,7 +177,7 @@ def show_birthday(args, book):
     name = args[0]
     record = book.find(name)
     if record and record.birthday:
-        return f"{name}'s birthday: {record.birthday.value.strftime('%d.%m.%Y')}"
+        return f"{name}'s birthday: {record.birthday.value}"
     return "Birthday not found or contact does not exist."
 
 @input_error
@@ -213,6 +216,6 @@ def main():
             print(birthdays(args, book))
         else:
             print("Invalid command.")
-            
+
 if __name__ == '__main__':
     main()
